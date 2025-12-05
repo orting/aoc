@@ -3,6 +3,8 @@ import System.IO (openFile, IOMode(ReadMode), hGetContents)
 import Data.List (sort)
 import Text.Read (readMaybe)
 
+type Range = (Int, Int)
+
 takeUntilDoubleLn :: String -> String
 takeUntiltDoubleLn [] = []
 takeUntilDoubleLn [c] = [c]
@@ -17,7 +19,7 @@ splitAtChar c (c1:cs)
   | otherwise = let
       (before, after) = splitAtChar2 c cs
       in
-      (c1:before):(splitAtChar c after)
+        (c1:before):(splitAtChar c after)
 
 splitAtChar2 :: Char -> String -> (String, String)
 splitAtChar2 _ [] = ([], [])
@@ -26,15 +28,14 @@ splitAtChar2 c (c1:cs)
   | otherwise = let
       (before, after) = splitAtChar2 c cs
       in
-      (c1:before, after)
+        (c1:before, after)
 
 firstTwo :: [String] -> (String,String)
 firstTwo [] = ("", "")
 firstTwo [s]  = (s, "")
 firstTwo (s:t:_) = (s,t)
 
-
-toRange :: (String, String) -> (Int, Int)
+toRange :: (String, String) -> Range
 toRange (s, t) = let
   x = case readMaybe s :: Maybe Int of
         Nothing -> -1
@@ -50,28 +51,23 @@ toInt s = case readMaybe s :: Maybe Int of
   Nothing -> -1
   Just n -> n
 
-readInput :: String -> [(Int,Int)]
-readInput s = let
-  fresh_ranges_str = takeUntilDoubleLn s
-  fresh_ranges = map (toRange . firstTwo . (splitAtChar '-')) (words fresh_ranges_str)
-  in
-    fresh_ranges
+toRange :: (String, String) -> Range
+toRange (s, t) = (toInt s, toInt t)
 
-mergeRanges :: [(Int, Int)] -> [(Int, Int)]
+mergeRanges :: [Range] -> [Range]
 mergeRanges [] = []
 mergeRanges [r] = [r]
 mergeRanges ((a,b):(c,d):rs)
   | b >= c = mergeRanges ((a, max b d) : rs)
   | otherwise = (a,b) : (mergeRanges ((c,d) : rs))
 
-rangeSize :: (Int, Int) -> Int
+rangeSize :: Range -> Int
 rangeSize (a, b) = 1 + b - a -- (a, a) has size 1
 
 process s = let
-  ranges = readInput s  
+  ranges = readInput s
   in
     sum $ map rangeSize $ mergeRanges $ sort ranges
-
 
 sample_path = "inputs/5.sample.txt"
 real_path = "inputs/5.txt"

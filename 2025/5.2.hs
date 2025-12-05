@@ -35,17 +35,6 @@ firstTwo [] = ("", "")
 firstTwo [s]  = (s, "")
 firstTwo (s:t:_) = (s,t)
 
-toRange :: (String, String) -> Range
-toRange (s, t) = let
-  x = case readMaybe s :: Maybe Int of
-        Nothing -> -1
-        Just n -> n
-  y = case readMaybe t :: Maybe Int of
-        Nothing -> -1
-        Just n -> n
-  in
-    (x, y)
-
 toInt :: String -> Int
 toInt s = case readMaybe s :: Maybe Int of
   Nothing -> -1
@@ -63,6 +52,14 @@ mergeRanges ((a,b):(c,d):rs)
 
 rangeSize :: Range -> Int
 rangeSize (a, b) = 1 + b - a -- (a, a) has size 1
+
+
+readInput :: String -> [(Int,Int)]
+readInput s = let
+  fresh_ranges_str = takeUntilDoubleLn s
+  fresh_ranges = map (toRange . firstTwo . (splitAtChar '-')) (words fresh_ranges_str)
+  in
+    fresh_ranges
 
 process s = let
   ranges = readInput s
